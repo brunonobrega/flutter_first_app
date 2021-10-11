@@ -9,16 +9,15 @@ class BankApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return  MaterialApp(
+    return MaterialApp(
       home: Scaffold(
-        body: TransferForm(),
+        body: TransferList(),
       ),
     );
   }
 }
 
 class TransferForm extends StatelessWidget {
-
   final TextEditingController inputControllerAccount = TextEditingController();
   final TextEditingController inputControllerValue = TextEditingController();
 
@@ -30,45 +29,18 @@ class TransferForm extends StatelessWidget {
       ),
       body: Column(
         children: [
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: TextField(
+          Editor(
               controller: inputControllerAccount,
-              style: const TextStyle(fontSize: 24.0),
-              decoration: const InputDecoration(
-                  labelText: 'Account Number', hintText: '0000'),
-              keyboardType: TextInputType.number,
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: TextField(
+              inputLabel: 'Account Number',
+              placeHolder: '0000'),
+          Editor(
               controller: inputControllerValue,
-              style: const TextStyle(fontSize: 24.0),
-              decoration: const InputDecoration(
-                  icon: Icon(Icons.monetization_on),
-                  labelText: 'Value',
-                  hintText: '0.00'),
-              keyboardType: TextInputType.number,
-            ),
-          ),
+              inputLabel: 'Value',
+              placeHolder: '0.00',
+              icon: Icons.monetization_on),
           ElevatedButton(
             onPressed: () {
-              debugPrint('Clicou');
-              final int? account = int.tryParse(inputControllerAccount.text);
-              final double? value = double.tryParse(inputControllerValue.text);
-              if(account != null && value != null) {
-                final makeTransfer = Transfer(value, account);
-                debugPrint('$makeTransfer');
-                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                  content: Text('$makeTransfer'),
-                  duration: const Duration(seconds: 2),
-                  // action: SnackBarAction(
-                  //   label: 'ACTION',
-                  //   onPressed: () { },
-                  // ),
-                ));
-              }
+              _createTransfer(context);
             },
             child: const Text('Confirm Transfer'),
           ),
@@ -76,29 +48,93 @@ class TransferForm extends StatelessWidget {
       ),
     );
   }
+
+  void _createTransfer(BuildContext context) {
+    final int? account = int.tryParse(inputControllerAccount.text);
+    final double? value = double.tryParse(inputControllerValue.text);
+    if (account != null && value != null) {
+      final makeTransfer = Transfer(value, account);
+      debugPrint('Creating Transfer');
+      debugPrint('$makeTransfer');
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text('$makeTransfer'),
+        duration: const Duration(seconds: 2),
+        // action: SnackBarAction(
+        //   label: 'ACTION',
+        //   onPressed: () { },
+        // ),
+      ));
+      Navigator.pop(context, makeTransfer);
+    }
+  }
 }
 
-class TransferList extends StatelessWidget {
-  const TransferList({Key? key}) : super(key: key);
+class Editor extends StatelessWidget {
+  final TextEditingController controller;
+  final String inputLabel;
+  final String placeHolder;
+  final IconData? icon;
+
+  const Editor({
+    Key? key,
+    required this.controller,
+    required this.inputLabel,
+    required this.placeHolder,
+    this.icon,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: TextField(
+        controller: controller,
+        style: const TextStyle(fontSize: 24.0),
+        decoration: InputDecoration(
+            icon: icon != null ? Icon(icon) : null,
+            labelText: inputLabel,
+            hintText: placeHolder),
+        keyboardType: TextInputType.number,
+      ),
+    );
+  }
+}
+
+class TransferList extends StatelessWidget {
+  // final List<Transfer> transfers;
+  final List<Transfer> transfers = [];
+
+  // const TransferList({Key? key, this.transfers}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    transfers.add(Transfer(100.0, 1000));
+    transfers.add(Transfer(100.0, 1000));
+    transfers.add(Transfer(100.0, 1000));
     return Scaffold(
       appBar: AppBar(
         title: const Text('Transfers'),
       ),
-      body: Column(
-        children: [
-          TransferItem(
-              transfer: Transfer(100.0, 1000)),
-          TransferItem(
-              transfer: Transfer(200.0, 1001)),
-          TransferItem(
-              transfer: Transfer(400.0, 2000)),
-        ],
+      body: ListView.builder(
+        itemCount: transfers.length,
+        itemBuilder: (context, index) {
+          final transferList = transfers[index];
+          return TransferItem(transfer: transferList,);
+        },
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {},
+        onPressed: () {
+          final Future<Transfer?> future = Navigator.push(context, MaterialPageRoute(builder: (context) {
+            return TransferForm();
+          }));
+          future.then((receivedTransfer) {
+            debugPrint('Arrived on Future');
+            debugPrint('$receivedTransfer');
+            if(receivedTransfer != null) {
+              transfers.add(receivedTransfer);
+            }
+          });
+        },
         child: const Icon(Icons.add),
       ),
     );
@@ -130,7 +166,6 @@ class Transfer {
   //     {Key? key, required this.transferValue, required this.accountNumber})
   //     : super(key: key);
   Transfer(this.transferValue, this.accountNumber);
-
 
   @override
   String toString() {
