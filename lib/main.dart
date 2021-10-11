@@ -1,18 +1,81 @@
 import 'package:flutter/material.dart';
 
 void main() {
-  runApp(MaterialApp(
-    home: Scaffold(
-      body: const TransferList(),
+  runApp(BankApp());
+}
+
+class BankApp extends StatelessWidget {
+  const BankApp({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return  MaterialApp(
+      home: Scaffold(
+        body: TransferForm(),
+      ),
+    );
+  }
+}
+
+class TransferForm extends StatelessWidget {
+
+  final TextEditingController inputControllerAccount = TextEditingController();
+  final TextEditingController inputControllerValue = TextEditingController();
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
       appBar: AppBar(
-        title: const Text('Transferências'),
+        title: const Text('Make a Transfer'),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {},
-        child: const Icon(Icons.add),
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: TextField(
+              controller: inputControllerAccount,
+              style: const TextStyle(fontSize: 24.0),
+              decoration: const InputDecoration(
+                  labelText: 'Account Number', hintText: '0000'),
+              keyboardType: TextInputType.number,
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: TextField(
+              controller: inputControllerValue,
+              style: const TextStyle(fontSize: 24.0),
+              decoration: const InputDecoration(
+                  icon: Icon(Icons.monetization_on),
+                  labelText: 'Value',
+                  hintText: '0.00'),
+              keyboardType: TextInputType.number,
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              debugPrint('Clicou');
+              final int? account = int.tryParse(inputControllerAccount.text);
+              final double? value = double.tryParse(inputControllerValue.text);
+              if(account != null && value != null) {
+                final makeTransfer = Transfer(value, account);
+                debugPrint('$makeTransfer');
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                  content: Text('$makeTransfer'),
+                  duration: const Duration(seconds: 2),
+                  // action: SnackBarAction(
+                  //   label: 'ACTION',
+                  //   onPressed: () { },
+                  // ),
+                ));
+              }
+            },
+            child: const Text('Confirm Transfer'),
+          ),
+        ],
       ),
-    ),
-  ));
+    );
+  }
 }
 
 class TransferList extends StatelessWidget {
@@ -20,21 +83,24 @@ class TransferList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: const [
-        TransferItem(transfer: Transfer(
-            transferValue: 100.0,
-            accountNumber: 1000)
-        ),
-        TransferItem(transfer: Transfer(
-            transferValue: 200.0,
-            accountNumber: 1001)
-        ),
-        TransferItem(transfer: Transfer(
-            transferValue: 400.0,
-            accountNumber: 2000)
-        ),
-      ],
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Transfers'),
+      ),
+      body: Column(
+        children: [
+          TransferItem(
+              transfer: Transfer(100.0, 1000)),
+          TransferItem(
+              transfer: Transfer(200.0, 1001)),
+          TransferItem(
+              transfer: Transfer(400.0, 2000)),
+        ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {},
+        child: const Icon(Icons.add),
+      ),
     );
   }
 }
@@ -42,8 +108,7 @@ class TransferList extends StatelessWidget {
 class TransferItem extends StatelessWidget {
   final Transfer transfer;
 
-  const TransferItem({Key? key, required this.transfer})
-      : super(key: key);
+  const TransferItem({Key? key, required this.transfer}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -57,18 +122,18 @@ class TransferItem extends StatelessWidget {
   }
 }
 
-class Transfer extends StatelessWidget {
+class Transfer {
   final double transferValue;
   final int accountNumber;
 
-  const Transfer(
-      {Key? key, required this.transferValue, required this.accountNumber})
-      : super(key: key);
+  // const Transfer(
+  //     {Key? key, required this.transferValue, required this.accountNumber})
+  //     : super(key: key);
+  Transfer(this.transferValue, this.accountNumber);
+
 
   @override
-  Widget build(BuildContext context) {
-    // TODO: implement build
-    throw UnimplementedError();
+  String toString() {
+    return ' Transfer{ value: $transferValue, account: $accountNumber }';
   }
-
 }
