@@ -27,24 +27,26 @@ class TransferForm extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Make a Transfer'),
       ),
-      body: Column(
-        children: [
-          Editor(
-              controller: inputControllerAccount,
-              inputLabel: 'Account Number',
-              placeHolder: '0000'),
-          Editor(
-              controller: inputControllerValue,
-              inputLabel: 'Value',
-              placeHolder: '0.00',
-              icon: Icons.monetization_on),
-          ElevatedButton(
-            onPressed: () {
-              _createTransfer(context);
-            },
-            child: const Text('Confirm Transfer'),
-          ),
-        ],
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            Editor(
+                controller: inputControllerAccount,
+                inputLabel: 'Account Number',
+                placeHolder: '0000'),
+            Editor(
+                controller: inputControllerValue,
+                inputLabel: 'Value',
+                placeHolder: '0.00',
+                icon: Icons.monetization_on),
+            ElevatedButton(
+              onPressed: () {
+                _createTransfer(context);
+              },
+              child: const Text('Confirm Transfer'),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -100,25 +102,27 @@ class Editor extends StatelessWidget {
   }
 }
 
-class TransferList extends StatelessWidget {
-  // final List<Transfer> transfers;
+class TransferList extends StatefulWidget {
   final List<Transfer> transfers = [];
+  
+  @override
+  State<StatefulWidget> createState() {
+    return TransferListState();
+  }
+}
 
-  // const TransferList({Key? key, this.transfers}) : super(key: key);
+class TransferListState extends State<TransferList> {
 
   @override
   Widget build(BuildContext context) {
-    transfers.add(Transfer(100.0, 1000));
-    transfers.add(Transfer(100.0, 1000));
-    transfers.add(Transfer(100.0, 1000));
     return Scaffold(
       appBar: AppBar(
         title: const Text('Transfers'),
       ),
       body: ListView.builder(
-        itemCount: transfers.length,
+        itemCount: widget.transfers.length,
         itemBuilder: (context, index) {
-          final transferList = transfers[index];
+          final transferList = widget.transfers[index];
           return TransferItem(transfer: transferList,);
         },
       ),
@@ -128,17 +132,20 @@ class TransferList extends StatelessWidget {
             return TransferForm();
           }));
           future.then((receivedTransfer) {
-            debugPrint('Arrived on Future');
-            debugPrint('$receivedTransfer');
-            if(receivedTransfer != null) {
-              transfers.add(receivedTransfer);
-            }
+            setState(() {
+              debugPrint('Arrived on Future');
+              debugPrint('$receivedTransfer');
+              if(receivedTransfer != null) {
+                widget.transfers.add(receivedTransfer);
+              }
+            });
           });
         },
         child: const Icon(Icons.add),
       ),
     );
   }
+
 }
 
 class TransferItem extends StatelessWidget {
