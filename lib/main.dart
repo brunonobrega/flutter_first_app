@@ -10,14 +10,31 @@ class BankApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      home: Scaffold(
-        body: TransferList(),
+      theme: ThemeData(
+        colorScheme:
+            ColorScheme.fromSwatch().copyWith(primary: Colors.grey[800], secondary: Colors.redAccent),
+        buttonTheme: ButtonThemeData(
+            buttonColor: Colors.redAccent[200],
+            textTheme: ButtonTextTheme.primary),
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ButtonStyle(
+            backgroundColor: MaterialStateProperty.all<Color>(Colors.redAccent)
+          )
+        )
       ),
+      home: TransferList(),
     );
   }
 }
 
-class TransferForm extends StatelessWidget {
+class TransferForm extends StatefulWidget {
+  @override
+  State<StatefulWidget> createState() {
+    return TransferFormState();
+  }
+}
+
+class TransferFormState extends State<TransferForm> {
   final TextEditingController inputControllerAccount = TextEditingController();
   final TextEditingController inputControllerValue = TextEditingController();
 
@@ -104,7 +121,7 @@ class Editor extends StatelessWidget {
 
 class TransferList extends StatefulWidget {
   final List<Transfer> transfers = [];
-  
+
   @override
   State<StatefulWidget> createState() {
     return TransferListState();
@@ -112,7 +129,6 @@ class TransferList extends StatefulWidget {
 }
 
 class TransferListState extends State<TransferList> {
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -123,19 +139,22 @@ class TransferListState extends State<TransferList> {
         itemCount: widget.transfers.length,
         itemBuilder: (context, index) {
           final transferList = widget.transfers[index];
-          return TransferItem(transfer: transferList,);
+          return TransferItem(
+            transfer: transferList,
+          );
         },
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          final Future<Transfer?> future = Navigator.push(context, MaterialPageRoute(builder: (context) {
+          final Future<Transfer?> future =
+              Navigator.push(context, MaterialPageRoute(builder: (context) {
             return TransferForm();
           }));
           future.then((receivedTransfer) {
+            debugPrint('Arrived on Future');
+            debugPrint('$receivedTransfer');
             setState(() {
-              debugPrint('Arrived on Future');
-              debugPrint('$receivedTransfer');
-              if(receivedTransfer != null) {
+              if (receivedTransfer != null) {
                 widget.transfers.add(receivedTransfer);
               }
             });
@@ -145,7 +164,6 @@ class TransferListState extends State<TransferList> {
       ),
     );
   }
-
 }
 
 class TransferItem extends StatelessWidget {
